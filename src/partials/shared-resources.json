@@ -46,6 +46,7 @@
       },
       "kind": "Storage",
       "properties": {
+        "allowBlobPublicAccess": false
       },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
