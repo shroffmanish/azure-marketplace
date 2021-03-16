@@ -39,13 +39,16 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[parameters('storageAccountName')]",
-      "apiVersion": "2019-04-01",
+      "apiVersion": "2020-08-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
       },
       "kind": "Storage",
       "properties": {
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false,
+        "allowSharedKeyAccess": true,
         "networkAcls": {
           "bypass": "AzureServices",
           "virtualNetworkRules": [
@@ -79,10 +82,26 @@
           ],
           "defaultAction": "Deny"
         },
-        "supportsHttpsTrafficOnly": true
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "keyType": "Account",
+              "enabled": true
+            },
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot"
       },
       "tags": {
-        "provider": "[toUpper(parameters('elasticTags').provider)]"
+        "provider": "[toUpper(parameters('elasticTags').provider)]",
+        "BILLINGCODE": "XYZ03853-01-02",
+        "Owner": "sarajendren@deloitte.com.au"
       }
     }
   ],
