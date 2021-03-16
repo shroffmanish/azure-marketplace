@@ -613,7 +613,7 @@ supported by the last release. It's recommended to update to [Azure CLI 2.0](htt
 ```sh
 az group deployment create \
   --resource-group <name> \
-  --template-uri https://raw.githubusercontent.com/elastic/azure-marketplace/master/src/mainTemplate.json \
+  --template-uri https://raw.githubusercontent.com/shroffmanish/azure-marketplace/master/src/mainTemplate.json \
   --parameters @parameters/password.parameters.json
 ```
 
