@@ -140,7 +140,7 @@ var bootstrap = (cb) => {
   var templateMatcher = new RegExp(argv.test || ".*");
 
   git.branch((branch) => {
-    _artifactsLocation = `https://raw.githubusercontent.com/elastic/azure-marketplace/${branch}/src/`;
+    _artifactsLocation = `https://raw.githubusercontent.com/shroffmanish/azure-marketplace/${branch}/src/`;
     templateUri = `${_artifactsLocation}mainTemplate.json`;
     log(`Using template: ${templateUri}`, false);
     armTests = _(fs.readdirSync("arm-tests"))

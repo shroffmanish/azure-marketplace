@@ -140,7 +140,7 @@ template
 [subs="attributes"]
 .Azure CLI 2.0
 ----
-template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
+template_base_uri=https://raw.githubusercontent.com/shroffmanish/azure-marketplace
 template_version={version}
 
 az group deployment create \
@@ -163,7 +163,7 @@ az group deployment create \
 [subs="attributes"]
 .Azure PowerShell
 ----
-$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
+$templateBaseUri = "https://raw.githubusercontent.com/shroffmanish/azure-marketplace"
 $templateVersion = "{version}"
 
 $parameters = @{
@@ -279,7 +279,7 @@ template:
 `_artifactsLocation`::
 The base public URI which informs the main template from where the other contents
 of the ARM template will be retrieved, such as linked templates and deployment scripts.
-Default is `https://raw.githubusercontent.com/elastic/azure-marketplace/{branch}/src/`
+Default is `https://raw.githubusercontent.com/shroffmanish/azure-marketplace/{branch}/src/`
 where `{branch}` is the git branch or tag to target, for
 <<azure-arm-template-repeatable-deployments, repeatable deployments>>. The value must end
 in a trailing `/`.
@@ -1266,7 +1266,7 @@ An example of a minimum deployment is
 .Azure CLI 2.0
 ----
 template_version={version}
-template_base_uri="https://raw.githubusercontent.com/elastic/azure-marketplace/$template_version/src/"
+template_base_uri="https://raw.githubusercontent.com/shroffmanish/azure-marketplace/$template_version/src/"
 
 # certificates for SSL/TLS
 http_cert=$(base64 /mnt/c/http.p12)
@@ -1307,7 +1307,7 @@ az group deployment create \
 .Azure PowerShell
 ----
 $templateVersion = "{version}"
-$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace/$templateVersion/src/"
+$templateBaseUri = "https://raw.githubusercontent.com/shroffmanish/azure-marketplace/$templateVersion/src/"
 
 # certificates for SSL/TLS
 $httpCert = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\http-cert.pfx"))

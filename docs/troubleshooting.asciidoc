@@ -147,7 +147,7 @@ As an example, to {github}/releases/tag/{version}[target {version} release] of t
 [subs="attributes"]
 .Azure CLI 2.0
 ----
-template_base_uri=https://raw.githubusercontent.com/elastic/azure-marketplace
+template_base_uri=https://raw.githubusercontent.com/shroffmanish/azure-marketplace
 template_version={version}
 
 az group deployment create \
@@ -170,7 +170,7 @@ az group deployment create \
 [subs="attributes"]
 .Azure PowerShell
 ----
-$templateBaseUri = "https://raw.githubusercontent.com/elastic/azure-marketplace"
+$templateBaseUri = "https://raw.githubusercontent.com/shroffmanish/azure-marketplace"
 $templateVersion = "{version}"
 
 $parameters = @{
