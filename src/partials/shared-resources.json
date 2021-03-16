@@ -53,7 +53,7 @@
           "bypass": "AzureServices",
           "virtualNetworkRules": [
             {
-              "id": "/subscriptions/5556023a-caf8-445b-8b59-b597321b41ef/resourceGroups/rg-test/providers/Microsoft.Network/virtualNetworks/vnet-illuminate",
+              "id": "/subscriptions/5556023a-caf8-445b-8b59-b597321b41ef/resourceGroups/rg-test/providers/Microsoft.Network/virtualNetworks/vnetilluminate",
               "action": "Allow",
               "state": "Succeeded"
             }
