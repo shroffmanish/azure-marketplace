@@ -39,7 +39,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[parameters('storageAccountName')]",
-      "apiVersion": "2019-04-01",
+      "apiVersion": "2019-06-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard_LRS"
@@ -95,7 +95,8 @@
             }
           },
           "keySource": "Microsoft.Storage"
-        }
+        },
+        "accessTier": "Hot"
       },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]",
