@@ -44,6 +44,19 @@
       "sku": {
         "name": "Standard_LRS"
       },
+      "networkAcls": {
+        "bypass": "AzureServices",
+        "virtualNetworkRules": [
+          {
+            "id": "[resourceId('rg-test', 'Microsoft.Network/virtualNetworks/subnets', 'vnet-illuminate', 'default')]",
+            "action": "Allow",
+            "state": "Succeeded"
+          }
+        ],
+        "resourceAccessRules": [
+        ],
+        "defaultAction": "Deny"
+      },
       "kind": "Storage",
       "properties": {
         "allowBlobPublicAccess": false
