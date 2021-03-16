@@ -44,21 +44,42 @@
       "sku": {
         "name": "Standard_LRS"
       },
-      "networkAcls": {
-        "virtualNetworkRules": [
-          {
-            "id": "[resourceId('rg-test', 'Microsoft.Network/virtualNetworks/subnets', 'vnet-illuminate', 'default')]",
-            "action": "Allow",
-            "state": "Succeeded"
-          }
-        ],
-        "resourceAccessRules": [
-        ],
-        "defaultAction": "Deny"
-      },
       "kind": "Storage",
       "properties": {
-        "allowBlobPublicAccess": false
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [
+            {
+              "id": "[resourceId('rg-test', 'Microsoft.Network/virtualNetworks/subnets', 'vnet-illuminate', 'default')]",
+              "action": "Allow",
+              "state": "Succeeded"
+            }
+          ],
+          "ipRules": [
+            {
+              "value": "103.118.162.214",
+              "action": "Allow"
+            },
+            {
+              "value": "103.78.109.73",
+              "action": "Allow"
+            },
+            {
+              "value": "165.225.114.0/23",
+              "action": "Allow"
+            },
+            {
+              "value": "175.45.116.0/24",
+              "action": "Allow"
+            },
+            {
+              "value": "165.225.98.0/24",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny"
+        },
+        "supportsHttpsTrafficOnly": true
       },
       "tags": {
         "provider": "[toUpper(parameters('elasticTags').provider)]"
