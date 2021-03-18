@@ -66,6 +66,7 @@
     "publicIpName": "[concat(variables('namespace'), '-ip')]",
     "securityGroupName": "[concat(variables('namespace'), '-nsg')]",
     "nicName": "[concat(variables('namespace'), '-nic')]",
+    "osType": "[concat(parameters('credentials').authenticationType, '_osProfile')]",
     "password_osProfile": {
       "computername": "[parameters('namespace')]",
       "adminUsername": "[parameters('credentials').adminUsername]",
@@ -86,7 +87,7 @@
       }
       }
     },
-    "osProfile": "[variables(concat(parameters('credentials').authenticationType, '_osProfile'))]"
+    "osProfile": "[variables('osType')]"
   },
   "resources": [
     {
