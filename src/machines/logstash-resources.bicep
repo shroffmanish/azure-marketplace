@@ -8,8 +8,8 @@ param elasticTags object = {
 
 var namespace = vm.namespace
 
-resource av_set 'Microsoft.Compute/availabilitySets@2019-03-01' = {
-  name: 'av-set'
+resource namespace_av_set 'Microsoft.Compute/availabilitySets@2019-03-01' = {
+  name: '${namespace}av-set'
   location: vm.shared.location
   tags: {
     provider: toUpper(elasticTags.provider)
@@ -23,7 +23,7 @@ resource av_set 'Microsoft.Compute/availabilitySets@2019-03-01' = {
   }
 }
 
-module namespace_vm_creation '../partials/vm.bicep' = {
+module namespace_vm_creation '../partials/vm.bicep'  = {
   name: '${namespace}-vm-creation'
   params: {
     vm: vm
@@ -32,6 +32,6 @@ module namespace_vm_creation '../partials/vm.bicep' = {
     elasticTags: elasticTags
   }
   dependsOn: [
-    av_set
+    namespace_av_set
   ]
 }

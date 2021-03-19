@@ -1,14 +1,9 @@
+@description('The base URI where artifacts required by this template are located, including a trailing \'/\'')
+param artifactsLocation string = 'https://raw.githubusercontent.com/shroffmanish/azure-marketplace/master/src/'
 
-
-//targetScope = 'subscription'
-
-//resource rg 'Microsoft.Resources/resourceGroups@2020-06-01'= {
-// name: 'rg-illuminate'
-// location: deployment().location 
-//}
-
-@description('Existing Resource Group')
-param rg string
+@description('The sasToken required to access _artifactsLocation. When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured.')
+@secure()
+param artifactsLocationSasToken string = ''
 
 @description('Unique identifiers to allow the Azure Infrastructure to understand the origin of resources deployed to Azure. You do not need to supply a value for this.')
 param elasticTags object = {
@@ -880,7 +875,7 @@ param authenticationType string = 'password'
 
 @description('Admin password')
 @secure()
-param adminPassword string
+param adminPassword string = ''
 
 @description('Admin ssh public key')
 @secure()
@@ -888,32 +883,34 @@ param sshPublicKey string = ''
 
 @description('Password for the bootstrap.password to add to the keystore in 6.x. If no value is supplied, a 13 character password will be generated using the uniqueString() function')
 @secure()
-param securityBootstrapPassword string = ''
+param securityBootstrapPassword string
 
 @description('Password for the built-in \'elastic\' user. Should be 12 characters or more, with a minimum of 6 characters')
 @secure()
-param securityAdminPassword string = '~ABC123456789'
+param securityAdminPassword string
 
 @description('Password for the built-in \'kibana\' user. Should be 12 characters or more, with a minimum of 6 characters')
 @secure()
-param securityKibanaPassword string= '~ABC123456789'
+param securityKibanaPassword string
 
 @description('Password for the built-in \'logstash_system\' user. Should be 12 characters or more, with a minimum of 6 characters')
 @secure()
-param securityLogstashPassword string= '~ABC123456789'
+param securityLogstashPassword string
 
 @description('Password for the built-in \'beats_system\' user. Should be 12 characters or more, with a minimum of 6 characters. Required for Elasticsearch 6.3.0+ when xpackPlugins is \'Yes\'')
 @secure()
-param securityBeatsPassword string= '~ABC123456789'
+param securityBeatsPassword string
 
 @description('Password for the built-in \'apm_system\' user. Should be 12 characters or more, with a minimum of 6 characters. Required for Elasticsearch 6.5.0+ when xpackPlugins is \'Yes\'')
 @secure()
-param securityApmPassword string= '~ABC123456789'
+param securityApmPassword string
 
 @description('Password for the built-in \'remote_monitoring_user\' user. Should be 12 characters or more, with a minimum of 6 characters. Required for Elasticsearch 6.5.0+ when xpackPlugins is \'Yes\'')
 @secure()
-param securityRemoteMonitoringPassword string= '~ABC123456789'
+param securityRemoteMonitoringPassword string
 
+@description('Location where resources will be provisioned. By default, the template deploys the resources to the same location as the resource group. If specified, must be a valid Azure location e.g. \'australiasoutheast\'')
+param location string = resourceGroup().location
 
 @allowed([
   'new'
@@ -992,13 +989,16 @@ param appGatewayEsHttpCertBlob string = ''
 
 var esVersionMajor = int(split(esVersion, '.')[0])
 var esVersionMinor = int(split(esVersion, '.')[1])
-
+var sharedTemplateUrl = uri(artifactsLocation, 'partials/shared-resources.json${artifactsLocationSasToken}')
+var networkTemplateUrl = uri(artifactsLocation, 'networks/virtual-network-resources.json${artifactsLocationSasToken}')
 var loadBalancerOptions = {
   internal: 'internal-lb-resources'
   external: 'external-lb-resources'
   gateway: '${toLower(appGatewayTier)}-application-gateway-resources'
 }
-
+var loadBalancerTemplateUrl = uri(artifactsLocation, 'loadbalancers/${loadBalancerOptions[loadBalancerType]}.json${artifactsLocationSasToken}')
+var osSettingsTemplateUrl = uri(artifactsLocation, 'settings/ubuntuSettings.json${artifactsLocationSasToken}')
+var location_var = location
 var azureCloudStorageAccount = {
   name: azureCloudStorageAccountName
   resourceGroup: azureCloudStorageAccountResourceGroup
@@ -1024,12 +1024,12 @@ var esSettings = {
   securityBeatsPwd: securityBeatsPassword
   securityApmPwd: securityApmPassword
   securityRemoteMonitoringPwd: securityRemoteMonitoringPassword
-  securityBootstrapPwd: ((!empty(securityBootstrapPassword)) ? securityBootstrapPassword : uniqueString(rg, deployment().name, securityAdminPassword))
+  securityBootstrapPwd: ((!empty(securityBootstrapPassword)) ? securityBootstrapPassword : uniqueString(resourceGroup().id, deployment().name, securityAdminPassword))
   samlMetadataUri: samlMetadataUri
   samlServiceProviderUri: samlServiceProviderUri
 }
 var networkResourceGroupMap = {
-  new: rg
+  new: resourceGroup().name
   existing: vNetExistingResourceGroup
 }
 var dataSkuSettings = {
@@ -1598,7 +1598,7 @@ var topologySettings = {
   logstashConf: logstashConf
   logstashPlugins: logstashAdditionalPlugins
   logstashYaml: logstashAdditionalYaml
-  logstashKeystorePwd: ((!empty(logstashKeystorePassword)) ? logstashKeystorePassword : uniqueString(rg, deployment().name, securityLogstashPassword))
+  logstashKeystorePwd: ((!empty(logstashKeystorePassword)) ? logstashKeystorePassword : uniqueString(resourceGroup().id, deployment().name, securityLogstashPassword))
   jumpbox: jumpbox
   dataNodeStorageSettings: {
     accountType: resolvedStorageAccountType
@@ -1612,7 +1612,7 @@ var networkSettings = {
   name: vNetName
   namespacePrefix: vmHostNamePrefix
   resourceGroup: networkResourceGroupMap[vNetNewOrExisting]
-  location: 'australiasoutheast'
+  location: location_var
   addressPrefix: vNetNewAddressPrefix
   https: ((((length(esHttpCertBlob) > 0) || (length(esHttpCaCertBlob) > 0)) && ((xpackPlugins == 'Yes') || ((esVersionMajor >= 7) && (esVersionMinor >= 1)) || ((esVersionMajor == 6) && (esVersionMinor >= 8)))) ? 'Yes' : 'No')
   subnet: {
@@ -1627,7 +1627,19 @@ var networkSettings = {
   internalSku: loadBalancerInternalSku
   externalSku: loadBalancerExternalSku
 }
-
+var commonVmSettings = {
+  namespacePrefix: vmHostNamePrefix
+  storageAccountName: 'elastic${uniqueString(resourceGroup().id, deployment().name)}'
+  location: location_var
+  subnet: networkSettings.subnet
+  subnetId: resourceId(networkSettings.resourceGroup, 'Microsoft.Network/virtualNetworks/subnets', networkSettings.name, networkSettings.subnet.name)
+  credentials: {
+    adminUsername: adminUsername
+    password: adminPassword
+    authenticationType: authenticationType
+    sshPublicKey: sshPublicKey
+  }
+}
 var applicationGatewaySettings = {
   skuName: '${appGatewayTier}_${appGatewaySku}'
   tier: appGatewayTier
@@ -1643,45 +1655,33 @@ var kibanaIpTemplates = {
   No: 'empty/empty-kibana-ip-resources.json'
   Yes: 'ips/kibana-ip-resources.json'
 }
+var kibanaIpTemplateUrl = uri(artifactsLocation, concat(kibanaIpTemplates[topologySettings.kibana], artifactsLocationSasToken))
 
+module elasticTags_tracking './nested_elasticTags_tracking.bicep' = {
+  name: elasticTags.tracking
+  params: {}
+}
 
-module shared 'partials/shared-resources.bicep' = {
+module shared '?' /*TODO: replace with correct path to [variables('sharedTemplateUrl')]*/ = {
   name: 'shared'
   params: {
-    location: 'australiasoutheast'
-    storageAccountName: 'elastic${uniqueString(rg, deployment().name)}'
+    location: location_var
+    storageAccountName: commonVmSettings.storageAccountName
     azureCloudStorageAccount: azureCloudStorageAccount
     elasticTags: elasticTags
   }
-    scope: resourceGroup(rg)
 }
 
-
-module network 'networks/virtual-network-resources.bicep'  = if (vNetNewOrExisting == 'new') {
+module network '?' /*TODO: replace with correct path to [variables('networkTemplateUrl')]*/ = if (vNetNewOrExisting == 'new') {
   name: 'network'
   params: {
     networkSettings: networkSettings
     loadBalancerType: loadBalancerType
     elasticTags: elasticTags
- }
-  scope: resourceGroup(rg)
-}
-
-var commonVmSettings = {
-  namespacePrefix: vmHostNamePrefix
-  storageAccountName:  shared.outputs.sharedStorageAccountName
-  location: 'australiasoutheast'
-  subnet: networkSettings.subnet
-  subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', networkSettings.name, networkSettings.subnet.name)
-  credentials: {
-    adminUsername: adminUsername
-    password: adminPassword
-    authenticationType: authenticationType
-    sshPublicKey: sshPublicKey
   }
 }
 
-module kibana_ip 'ips/kibana-ip-resources.bicep' = {
+module kibana_ip '?' /*TODO: replace with correct path to [variables('kibanaIpTemplateUrl')]*/ = {
   name: 'kibana-ip'
   params: {
     location: commonVmSettings.location
@@ -1689,12 +1689,10 @@ module kibana_ip 'ips/kibana-ip-resources.bicep' = {
     https: topologySettings.kibanaHttps
     elasticTags: elasticTags
   }
-  scope: resourceGroup(rg)
 }
 
-
-module loadbalancerInternal  'loadbalancers/internal-lb-resources.bicep' = if (loadBalancerType == 'internal') {
-  name: 'loadbalancerInternal'
+module loadbalancer '?' /*TODO: replace with correct path to [variables('loadBalancerTemplateUrl')]*/ = {
+  name: 'loadbalancer'
   params: {
     networkSettings: networkSettings
     applicationGatewaySettings: applicationGatewaySettings
@@ -1704,26 +1702,13 @@ module loadbalancerInternal  'loadbalancers/internal-lb-resources.bicep' = if (l
     shared
     network
   ]
-   scope:resourceGroup(rg)
 }
 
-module loadbalancerExternal  'loadbalancers/external-lb-resources.bicep' = if (loadBalancerType == 'external') {
-  name: 'loadbalancerExternal'
-  params: {
-    networkSettings: networkSettings
-    applicationGatewaySettings: applicationGatewaySettings
-    elasticTags: elasticTags
-  }
-  dependsOn: [
-    shared
-    network
-  ]
-   scope:resourceGroup(rg)
-}
-
-module virtual_machines './settings/ubuntuSettings.bicep'  = {
+module virtual_machines '?' /*TODO: replace with correct path to [variables('osSettingsTemplateUrl')]*/ = {
   name: 'virtual-machines'
   params: {
+    '_artifactsLocation': artifactsLocation
+    '_artifactsLocationSasToken': artifactsLocationSasToken
     esSettings: esSettings
     commonVmSettings: commonVmSettings
     topologySettings: topologySettings
@@ -1732,27 +1717,23 @@ module virtual_machines './settings/ubuntuSettings.bicep'  = {
       name: azureCloudStorageAccount.name
       resourceGroup: azureCloudStorageAccount.resourceGroup
       install: azureCloudStorageAccount.install
-     key: shared.outputs.existingStorageAccountKey
-      suffix: shared.outputs.existingStorageAccountSuffix
+      key: reference('shared').outputs.existingStorageAccountKey.value
+      suffix: reference('shared').outputs.existingStorageAccountSuffix.value
     }
     kibanaIp: reference('kibana-ip').outputs.fqdn.value
     sharedStorageAccount: {
       name: commonVmSettings.storageAccountName
-      key: shared.outputs.sharedStorageAccountKey
-      suffix: shared.outputs.sharedStorageAccountSuffix
+      key: reference('shared').outputs.sharedStorageAccountKey.value
+      suffix: reference('shared').outputs.sharedStorageAccountSuffix.value
     }
     elasticTags: elasticTags
   }
   dependsOn: [
-    loadbalancerInternal
+    loadbalancer
     kibana_ip
   ]
-  scope:resourceGroup(rg)
 }
 
-
-
-//output loadbalancerInternal string = reference('loadbalancerInternal').outputs.fqdn.value
-//output loadbalancerExternal string = reference('loadbalancerExternal').outputs.fqdn.value
+output loadbalancer string = reference('loadbalancer').outputs.fqdn.value
 output kibana string = reference('kibana-ip').outputs.fqdn.value
-//output jumpboxssh string = reference('virtual-machines').outputs.jumpboxssh.value
+output jumpboxssh string = reference('virtual-machines').outputs.jumpboxssh.value

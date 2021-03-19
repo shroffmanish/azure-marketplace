@@ -1,10 +1,3 @@
-@description('The base URI where artifacts required by this template are located including a trailing \'/\'')
-param artifactsLocation string
-
-@description('The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured.')
-@secure()
-param artifactsLocationSasToken string = ''
-
 @description('Operating system settings')
 param osSettings object
 
@@ -26,13 +19,13 @@ var jumpboxTemplates = {
   No: 'empty/empty-jumpbox-resources.json'
   Yes: 'machines/jumpbox-resources.json'
 }
-var jumpboxTemplateUrl = uri(artifactsLocation, concat(jumpboxTemplates[topologySettings.jumpbox], artifactsLocationSasToken))
+
 var kibanaTemplates = {
   No: 'empty/empty-kibana-resources.json'
   Yes: 'machines/kibana-resources.json'
 }
-var kibanaTemplateUrl = uri(artifactsLocation, concat(kibanaTemplates[topologySettings.kibana], artifactsLocationSasToken))
-var dataTemplateUrl = uri(artifactsLocation, 'machines/data-nodes-resources.json${artifactsLocationSasToken}')
+//var kibanaTemplateUrl = uri(artifactsLocation, concat(kibanaTemplates[topologySettings.kibana], artifactsLocationSasToken))
+
 var locations = {
   eastus: {
     platformFaultDomainCount: 3
@@ -160,11 +153,9 @@ var standardInternalLoadBalancer = (networkSettings.internalSku == 'Standard')
 var standardExternalLoadBalancer = (networkSettings.externalSku == 'Standard')
 var standardInternalOrExternalLoadBalancer = (standardInternalLoadBalancer || standardExternalLoadBalancer)
 
-module master_nodes '?' /*TODO: replace with correct path to [uri(parameters('_artifactsLocation'), concat('machines/master-nodes-resources.json', parameters('_artifactsLocationSasToken')))]*/ = if (topologySettings.dataNodesAreMasterEligible == 'No') {
+module master_nodes '../machines/master-nodes-resources.bicep'  = if (topologySettings.dataNodesAreMasterEligible == 'No') {
   name: 'master-nodes'
   params: {
-    '_artifactsLocation': artifactsLocation
-    '_artifactsLocationSasToken': artifactsLocationSasToken
     vm: {
       shared: commonVmSettings
       namespace: '${commonVmSettings.namespacePrefix}master-'
@@ -182,6 +173,7 @@ module master_nodes '?' /*TODO: replace with correct path to [uri(parameters('_a
     elasticTags: elasticTags
   }
   dependsOn: []
+   scope: resourceGroup()
 }
 
 resource vmNsgName 'Microsoft.Network/networkSecurityGroups@2019-04-01' = if (standardInternalOrExternalLoadBalancer) {
@@ -193,11 +185,9 @@ resource vmNsgName 'Microsoft.Network/networkSecurityGroups@2019-04-01' = if (st
   properties: vmNsgProperties[(standardExternalLoadBalancer ? 1 : 0)]
 }
 
-module client_nodes '?' /*TODO: replace with correct path to [uri(parameters('_artifactsLocation'), concat('machines/client-nodes-resources.json', parameters('_artifactsLocationSasToken')))]*/ = if (topologySettings.vmClientNodeCount > 0) {
+module client_nodes '../machines/client-nodes-resources.bicep'= if (topologySettings.vmClientNodeCount > 0) {
   name: 'client-nodes'
   params: {
-    '_artifactsLocation': artifactsLocation
-    '_artifactsLocationSasToken': artifactsLocationSasToken
     vm: {
       shared: commonVmSettings
       namespace: '${commonVmSettings.namespacePrefix}client-'
@@ -217,13 +207,12 @@ module client_nodes '?' /*TODO: replace with correct path to [uri(parameters('_a
   dependsOn: [
     vmNsgName
   ]
+  scope: resourceGroup()
 }
 
-module data_nodes '?' /*TODO: replace with correct path to [variables('dataTemplateUrl')]*/ = {
+module data_nodes '../machines/data-nodes-resources.bicep' = {
   name: 'data-nodes'
   params: {
-    '_artifactsLocation': artifactsLocation
-    '_artifactsLocationSasToken': artifactsLocationSasToken
     vm: {
       shared: commonVmSettings
       namespace: '${commonVmSettings.namespacePrefix}data-'
@@ -244,9 +233,10 @@ module data_nodes '?' /*TODO: replace with correct path to [variables('dataTempl
   dependsOn: [
     vmNsgName
   ]
+  scope: resourceGroup()
 }
 
-module jumpbox '?' /*TODO: replace with correct path to [variables('jumpboxTemplateUrl')]*/ = {
+module jumpbox '../machines/jumpbox-resources.bicep' = {
   name: 'jumpbox'
   params: {
     credentials: commonVmSettings.credentials
@@ -257,9 +247,10 @@ module jumpbox '?' /*TODO: replace with correct path to [variables('jumpboxTempl
     elasticTags: elasticTags
   }
   dependsOn: []
+  scope: resourceGroup()
 }
 
-module kibana '?' /*TODO: replace with correct path to [variables('kibanaTemplateUrl')]*/ = {
+module kibana '../machines/kibana-resources.bicep' = {
   name: 'kibana'
   params: {
     credentials: commonVmSettings.credentials
@@ -272,13 +263,12 @@ module kibana '?' /*TODO: replace with correct path to [variables('kibanaTemplat
     elasticTags: elasticTags
   }
   dependsOn: []
+  scope: resourceGroup()
 }
 
-module logstash '?' /*TODO: replace with correct path to [uri(parameters('_artifactsLocation'), concat('machines/logstash-resources.json', parameters('_artifactsLocationSasToken')))]*/ = if (topologySettings.logstash == 'Yes') {
+module logstash '../machines/logstash-resources.bicep'  = if (topologySettings.logstash == 'Yes') {
   name: 'logstash'
   params: {
-    '_artifactsLocation': artifactsLocation
-    '_artifactsLocationSasToken': artifactsLocationSasToken
     vm: {
       shared: commonVmSettings
       namespace: '${commonVmSettings.namespacePrefix}logstash-'
@@ -296,6 +286,7 @@ module logstash '?' /*TODO: replace with correct path to [uri(parameters('_artif
     elasticTags: elasticTags
   }
   dependsOn: []
+  scope: resourceGroup()
 }
 
 output jumpboxssh string = reference('jumpbox').outputs.ssh.value

@@ -16,6 +16,7 @@ param elasticTags object = {
   provider: '648D2193-0CE0-4EFB-8A82-AF9792184FD9'
 }
 
+
 var namespace_var = namespace
 var publicIpName_var = '${namespace_var}-ip'
 var httpsOpts = {
@@ -24,7 +25,7 @@ var httpsOpts = {
 }
 var https_var = httpsOpts[https]
 
-resource publicIpName 'Microsoft.Network/publicIPAddresses@2019-04-01' = {
+resource publicIpName 'Microsoft.Network/publicIPAddresses@2020-06-01' = {
   name: publicIpName_var
   location: location
   tags: {
@@ -33,9 +34,9 @@ resource publicIpName 'Microsoft.Network/publicIPAddresses@2019-04-01' = {
   properties: {
     publicIPAllocationMethod: 'Dynamic'
     dnsSettings: {
-      domainNameLabel: 'kb-${uniqueString(resourceGroup().id, deployment().name, publicIpName_var)}'
+      domainNameLabel: 'kb-${uniqueString(location, publicIpName_var)}'
     }
-  }
+  } 
 }
 
 output fqdn string = '${https_var}${reference(publicIpName_var).dnsSettings.fqdn}:5601'
