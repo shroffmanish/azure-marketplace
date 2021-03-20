@@ -272,7 +272,7 @@ param kibanaAdditionalYaml string = ''
   'No'
 ])
 @description('Provision machines with Logstash')
-param logstash string = 'No'
+param logstash string = 'Yes'
 
 @allowed([
   'Standard_A1_v2'
@@ -736,7 +736,7 @@ param vmMasterNodeAcceleratedNetworking string = 'Default'
 
 @minValue(0)
 @description('Number of Elasticsearch coordinating nodes to provision. A value of 0 puts the data nodes in the load balancer backend pool')
-param vmClientNodeCount int = 0
+param vmClientNodeCount int = 1
 
 @allowed([
   'Standard_A1_v2'
@@ -1672,7 +1672,6 @@ var commonVmSettings = {
   storageAccountName:  shared.outputs.sharedStorageAccountName
   location: 'australiasoutheast'
   subnet: networkSettings.subnet
-  subnetId: resourceId('Microsoft.Network/virtualNetworks/subnets', networkSettings.name, networkSettings.subnet.name)
   credentials: {
     adminUsername: adminUsername
     password: adminPassword

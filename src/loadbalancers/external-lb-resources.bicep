@@ -18,7 +18,7 @@ var internalLoadBalancerName_var = '${networkSettings.namespacePrefix}internal-l
 var externalLoadBalancerName_var = '${networkSettings.namespacePrefix}external-lb'
 var externalLoadBalancerIp_var = '${networkSettings.namespacePrefix}external-lb-ip'
 
-resource internalLoadBalancerName 'Microsoft.Network/loadBalancers@2019-04-01' = {
+resource internalLoadBalancerName 'Microsoft.Network/loadBalancers@2020-06-01' = {
   name: internalLoadBalancerName_var
   location: networkSettings.location
   sku: {
@@ -96,7 +96,7 @@ resource internalLoadBalancerName 'Microsoft.Network/loadBalancers@2019-04-01' =
   }
 }
 
-resource externalLoadBalancerIp 'Microsoft.Network/publicIPAddresses@2019-04-01' = {
+resource externalLoadBalancerIp 'Microsoft.Network/publicIPAddresses@2020-06-01' = {
   name: externalLoadBalancerIp_var
   location: networkSettings.location
   sku: {
@@ -113,7 +113,7 @@ resource externalLoadBalancerIp 'Microsoft.Network/publicIPAddresses@2019-04-01'
   }
 }
 
-resource externalLoadBalancerName 'Microsoft.Network/loadBalancers@2019-04-01' = {
+resource externalLoadBalancerName 'Microsoft.Network/loadBalancers@2020-06-01' = {
   name: externalLoadBalancerName_var
   location: networkSettings.location
   sku: {

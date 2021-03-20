@@ -56,7 +56,7 @@ var sshPublicKey_osProfile = {
   }
 }
 
-resource securityGroupName 'Microsoft.Network/networkSecurityGroups@2019-04-01' = {
+resource securityGroupName 'Microsoft.Network/networkSecurityGroups@2020-06-01' = {
   name: securityGroupName_var
   location: location
   tags: {
@@ -96,14 +96,13 @@ resource securityGroupName 'Microsoft.Network/networkSecurityGroups@2019-04-01' 
   }
 }
 
-resource nicName 'Microsoft.Network/networkInterfaces@2019-04-01' = {
+resource nicName 'Microsoft.Network/networkInterfaces@2020-06-01' = {
   name: nicName_var
   location: location
   tags: {
     provider: toUpper(elasticTags.provider)
   }
   properties: {
-    primary: true
     enableAcceleratedNetworking: (acceleratedNetworking == 'Yes')
     ipConfigurations: [
       {
@@ -125,7 +124,7 @@ resource nicName 'Microsoft.Network/networkInterfaces@2019-04-01' = {
   }
 }
 
-resource namespace_resource 'Microsoft.Compute/virtualMachines@2019-03-01' = {
+resource namespace_resource 'Microsoft.Compute/virtualMachines@2020-06-01' = {
   name: namespace
   location: location
   tags: {
@@ -157,7 +156,7 @@ resource namespace_resource 'Microsoft.Compute/virtualMachines@2019-03-01' = {
   }
 }
 
-resource namespace_script 'Microsoft.Compute/virtualMachines/extensions@2019-03-01' = {
+resource namespace_script 'Microsoft.Compute/virtualMachines/extensions@2020-06-01' = {
   name: '${namespace_var}/script'
   location: location
   properties: osSettings.extensionSettings.kibana

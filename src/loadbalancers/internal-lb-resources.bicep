@@ -11,7 +11,7 @@ param elasticTags object = {
 
 var internalLoadBalancerName_var = '${networkSettings.namespacePrefix}internal-lb'
 
-resource internalLoadBalancerName 'Microsoft.Network/loadBalancers@2019-04-01' = {
+resource internalLoadBalancerName 'Microsoft.Network/loadBalancers@2020-06-01' = {
   name: internalLoadBalancerName_var
   location: networkSettings.location
   sku: {

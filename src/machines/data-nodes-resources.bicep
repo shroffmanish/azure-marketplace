@@ -1,6 +1,9 @@
 @description('vm configuration')
 param vm object
 
+@description('Network settings')
+param networkSettings object
+
 @description('Storage Account Settings')
 param storageSettings object
 
@@ -13,7 +16,7 @@ var namespace = vm.namespace
 var avSetCount = (((vm.count - 1) / 100) + 1)
 var diskCount = ((storageSettings.dataDisks > 0) ? storageSettings.dataDisks : 1)
 
-resource namespace_av_set 'Microsoft.Compute/availabilitySets@2019-03-01' = {
+resource namespace_av_set 'Microsoft.Compute/availabilitySets@2020-06-01' = {
   name: '${namespace}-av-set'
   location: vm.shared.location
   tags: {
@@ -32,22 +35,10 @@ module namespace_vm_creation '../partials/vm.bicep' = if (storageSettings.dataDi
   name: '${namespace}-vm-creation'
   params: {
     vm: vm
+    networkSettings: networkSettings
     index: 1
-    availabilitySet: '${namespace}${avSetCount}-av-set'
-    dataDisks: {
-      name: 'disks'
-      count: diskCount
-      input: {
-        name: '${namespace}-datadisk1'
-        diskSizeGB: storageSettings.diskSize
-        lun: '1'
-        managedDisk: {
-          storageAccountType: storageSettings.accountType
-        }
-        caching: 'None'
-        createOption: 'Empty'
-      }
-    }
+    availabilitySet: namespace_av_set.name
+    dataDisks: diskCount
     elasticTags: elasticTags
   }
   dependsOn: [
@@ -55,12 +46,14 @@ module namespace_vm_creation '../partials/vm.bicep' = if (storageSettings.dataDi
   ]
 }
 
+
 module namespace_vm_nodisks_creation '../partials/vm.bicep' = if (storageSettings.dataDisks == 0) {
   name: '${namespace}-vm-nodisks-creation'
   params: {
     vm: vm
+    networkSettings: networkSettings
     index: 1
-    availabilitySet: '${namespace}${avSetCount}-av-set'
+    availabilitySet: namespace_av_set.name
     elasticTags: elasticTags
   }
   dependsOn: [

@@ -158,7 +158,7 @@ module master_nodes '../machines/master-nodes-resources.bicep'  = if (topologySe
   params: {
     vm: {
       shared: commonVmSettings
-      namespace: '${commonVmSettings.namespacePrefix}master-'
+      namespace: '${commonVmSettings.namespacePrefix}master'
       installScript: osSettings.extensionSettings.master
       size: topologySettings.vmSizeMasterNodes
       storageAccountType: 'Standard_LRS'
@@ -170,10 +170,11 @@ module master_nodes '../machines/master-nodes-resources.bicep'  = if (topologySe
       nsg: ''
       standardInternalLoadBalancer: false
     }
+    networkSettings: networkSettings
     elasticTags: elasticTags
   }
   dependsOn: []
-   scope: resourceGroup()
+  scope:resourceGroup()
 }
 
 resource vmNsgName 'Microsoft.Network/networkSecurityGroups@2019-04-01' = if (standardInternalOrExternalLoadBalancer) {
@@ -190,7 +191,7 @@ module client_nodes '../machines/client-nodes-resources.bicep'= if (topologySett
   params: {
     vm: {
       shared: commonVmSettings
-      namespace: '${commonVmSettings.namespacePrefix}client-'
+      namespace: '${commonVmSettings.namespacePrefix}client'
       installScript: osSettings.extensionSettings.client
       size: topologySettings.vmSizeClientNodes
       count: topologySettings.vmClientNodeCount
@@ -202,12 +203,13 @@ module client_nodes '../machines/client-nodes-resources.bicep'= if (topologySett
       nsg: (standardInternalOrExternalLoadBalancer ? vmNsgName_var : '')
       standardInternalLoadBalancer: standardInternalLoadBalancer
     }
+    networkSettings: networkSettings
     elasticTags: elasticTags
   }
   dependsOn: [
     vmNsgName
   ]
-  scope: resourceGroup()
+  scope:resourceGroup()
 }
 
 module data_nodes '../machines/data-nodes-resources.bicep' = {
@@ -215,7 +217,7 @@ module data_nodes '../machines/data-nodes-resources.bicep' = {
   params: {
     vm: {
       shared: commonVmSettings
-      namespace: '${commonVmSettings.namespacePrefix}data-'
+      namespace: '${commonVmSettings.namespacePrefix}data'
       installScript: osSettings.extensionSettings.data
       size: topologySettings.vmSizeDataNodes
       storageAccountType: topologySettings.vmDataNodeStorageAccountType
@@ -227,13 +229,14 @@ module data_nodes '../machines/data-nodes-resources.bicep' = {
       nsg: ((standardInternalOrExternalLoadBalancer && (topologySettings.vmClientNodeCount == 0)) ? vmNsgName_var : '')
       standardInternalLoadBalancer: standardInternalLoadBalancer
     }
+    networkSettings: networkSettings
     storageSettings: topologySettings.dataNodeStorageSettings
     elasticTags: elasticTags
   }
   dependsOn: [
     vmNsgName
   ]
-  scope: resourceGroup()
+   scope:resourceGroup()
 }
 
 module jumpbox '../machines/jumpbox-resources.bicep' = {
@@ -247,7 +250,6 @@ module jumpbox '../machines/jumpbox-resources.bicep' = {
     elasticTags: elasticTags
   }
   dependsOn: []
-  scope: resourceGroup()
 }
 
 module kibana '../machines/kibana-resources.bicep' = {
@@ -263,7 +265,6 @@ module kibana '../machines/kibana-resources.bicep' = {
     elasticTags: elasticTags
   }
   dependsOn: []
-  scope: resourceGroup()
 }
 
 module logstash '../machines/logstash-resources.bicep'  = if (topologySettings.logstash == 'Yes') {
@@ -271,7 +272,7 @@ module logstash '../machines/logstash-resources.bicep'  = if (topologySettings.l
   params: {
     vm: {
       shared: commonVmSettings
-      namespace: '${commonVmSettings.namespacePrefix}logstash-'
+      namespace: '${commonVmSettings.namespacePrefix}logstash'
       installScript: osSettings.extensionSettings.logstash
       size: topologySettings.vmSizeLogstash
       storageAccountType: 'Standard_LRS'
@@ -283,10 +284,11 @@ module logstash '../machines/logstash-resources.bicep'  = if (topologySettings.l
       nsg: ''
       standardInternalLoadBalancer: false
     }
+    networkSettings: networkSettings
     elasticTags: elasticTags
   }
   dependsOn: []
-  scope: resourceGroup()
+  scope:resourceGroup()
 }
 
 output jumpboxssh string = reference('jumpbox').outputs.ssh.value

@@ -40,7 +40,7 @@ var subnetsOpts = [
 ]
 var subnets = subnetsOpts[((loadBalancerType == 'gateway') ? 0 : 1)]
 
-resource networkSettings_name 'Microsoft.Network/virtualNetworks@2019-04-01' = {
+resource networkSettings_name 'Microsoft.Network/virtualNetworks@2020-06-01' = {
   name: networkSettings.name
   location: networkSettings.location
   tags: {
